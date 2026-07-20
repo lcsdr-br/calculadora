@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F6F8FB">
+<meta name="description" content="Comparador familiar: pagar à vista (PIX) com desconto ou no cartão de crédito deixando o dinheiro render a 100% do CDI.">
+<title>À Vista ou Cartão? — Comparador de Pagamento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F6F8FB;           /* claro: papel de extrato */
+    --panel:#FFFFFF;
+    --panel-2:#EDF1F7;
+    --line:#D9E2EE;
+    --ink:#17293F;
+    --ink-dim:#5B6E85;
+    --pix:#0FA895;           /* verde-PIX ajustado p/ contraste em fundo claro */
+    --pix-deep:#0A7466;
+    --pix-tint:#E4F6F3;
+    --card:#D98A0B;          /* âmbar-cartão ajustado p/ contraste */
+    --card-deep:#9A6410;
+    --card-tint:#FBF1DD;
+    --win:#0E9F6E;
+    --danger:#D64545;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(23,41,63,.05), 0 4px 14px rgba(23,41,63,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans',system-ui,sans-serif;
+    line-height:1.5;
+    min-height:100vh;
+    background-image:
+      radial-gradient(1000px 420px at 85% -10%, rgba(15,168,149,.07), transparent 60%),
+      radial-gradient(800px 380px at 5% 110%, rgba(217,138,11,.06), transparent 60%);
+  }
+  .wrap{max-width:980px;margin:0 auto;padding:24px 16px 60px}
+
+  /* ---------- header ---------- */
+  header{margin-bottom:22px}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--pix-deep);margin-bottom:8px
+  }
+  h1{
+    font-family:'Archivo',sans-serif;font-weight:900;font-size:clamp(1.55rem,5.5vw,2.5rem);
+    line-height:1.1;letter-spacing:-.01em
+  }
+  h1 .vs{color:var(--card)}
+  .sub{color:var(--ink-dim);margin-top:10px;max-width:640px;font-size:.93rem}
+
+  /* ---------- CDI inline (campo 6) ---------- */
+  .cdi-row{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    margin:2px 0 8px;padding:8px 12px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel-2);max-width:100%;
+  }
+  .cdi-dot{width:9px;height:9px;border-radius:50%;background:var(--ink-dim);flex:none}
+  .cdi-dot.ok{background:var(--win);box-shadow:0 0 6px rgba(14,159,110,.55)}
+  .cdi-dot.err{background:var(--danger)}
+  .cdi-row .lbl{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.06em;color:var(--ink-dim)}
+  .cdi-row .val{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:.85rem}
+  .cdi-row button{
+    border:1px solid var(--line);background:var(--panel);color:var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;padding:5px 11px;border-radius:999px;
+    cursor:pointer;transition:.15s;min-height:30px;margin-left:auto
+  }
+  .cdi-row button:hover{color:var(--ink);border-color:var(--ink-dim)}
+  .cdi-row button:focus-visible{outline:2px solid var(--pix);outline-offset:2px}
+
+  /* ---------- form ---------- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr;gap:10px}}
+  .field{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px 16px;box-shadow:var(--shadow);
+  }
+  .field label{
+    display:block;font-family:'IBM Plex Mono',monospace;font-size:.68rem;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim);margin-bottom:6px
+  }
+  .field input[type=number]{
+    width:100%;background:transparent;border:none;color:var(--ink);
+    font-family:'Archivo',sans-serif;font-weight:700;font-size:1.3rem;outline:none;
+    min-height:40px;
+  }
+  .field input[type=number]:focus-visible{outline:2px solid var(--pix);outline-offset:4px;border-radius:4px}
+  .field .hint{font-size:.75rem;color:var(--ink-dim);margin-top:4px}
+
+  .mode{display:flex;gap:0;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:10px;background:var(--panel-2)}
+  .mode button{
+    flex:1;padding:10px 6px;background:transparent;border:none;color:var(--ink-dim);
+    font-family:'IBM Plex Sans',sans-serif;font-weight:600;font-size:.82rem;cursor:pointer;transition:.15s;
+    min-height:40px
+  }
+  .mode button.active{background:var(--card);color:#fff}
+  .mode button:focus-visible{outline:2px solid var(--card);outline-offset:-2px}
+  .mode.mode-pix button.active{background:var(--pix);color:#fff}
+  .mode.mode-pix button:focus-visible{outline:2px solid var(--pix);outline-offset:-2px}
+
+  /* ---------- verdict ---------- */
+  .verdict{
+    margin-top:26px;border-radius:var(--radius);padding:24px 18px;
+    text-align:center;border:1px solid var(--line);background:var(--panel);
+    position:relative;overflow:hidden;box-shadow:var(--shadow);
+  }
+  .verdict.pix{border-color:rgba(15,168,149,.5);background:linear-gradient(160deg,var(--pix-tint),var(--panel) 60%)}
+  .verdict.card{border-color:rgba(217,138,11,.5);background:linear-gradient(160deg,var(--card-tint),var(--panel) 60%)}
+  .verdict .tag{
+    font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-dim)
+  }
+  .verdict h2{
+    font-family:'Archivo',sans-serif;font-weight:900;font-size:clamp(1.35rem,5vw,2.2rem);
+    margin:8px 0 4px;letter-spacing:-.01em
+  }
+  .verdict.pix h2{color:var(--pix-deep)}
+  .verdict.card h2{color:var(--card-deep)}
+  .verdict .save{font-size:1rem;color:var(--ink)}
+  .verdict .save strong{font-family:'IBM Plex Mono',monospace;font-weight:600}
+  .verdict .save .pct{color:var(--win)}
+  .verdict .tie{color:var(--ink-dim)}
+
+  /* ---------- duel bars ---------- */
+  .duel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:640px){.duel{grid-template-columns:1fr;gap:10px}}
+  .side{
+    border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);
+    padding:18px 16px;position:relative;transition:.25s;box-shadow:var(--shadow);
+  }
+  .side.winner{border-width:2px}
+  .side.pix-side.winner{border-color:var(--pix)}
+  .side.card-side.winner{border-color:var(--card)}
+  .side .crown{
+    position:absolute;top:-11px;right:14px;font-family:'IBM Plex Mono',monospace;
+    font-size:.64rem;letter-spacing:.12em;padding:3px 10px;border-radius:999px;
+    background:var(--win);color:#fff;font-weight:600;display:none
+  }
+  .side.winner .crown{display:inline-block}
+  .side h3{
+    font-family:'Archivo',sans-serif;font-weight:800;font-size:1.02rem;
+    display:flex;align-items:center;gap:8px
+  }
+  .swatch{width:12px;height:12px;border-radius:3px;flex:none}
+  .pix-side .swatch{background:var(--pix)}
+  .card-side .swatch{background:var(--card)}
+  .side .desc{font-size:.78rem;color:var(--ink-dim);margin:4px 0 14px}
+  .side .vp-lbl{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .side .vp{
+    font-family:'Archivo',sans-serif;font-weight:900;font-size:clamp(1.5rem,6vw,2rem);
+    letter-spacing:-.01em;margin:2px 0 12px
+  }
+  .bar-track{height:14px;border-radius:999px;background:var(--panel-2);overflow:hidden;border:1px solid var(--line)}
+  .bar{height:100%;border-radius:999px;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+  .pix-side .bar{background:linear-gradient(90deg,var(--pix-deep),var(--pix))}
+  .card-side .bar{background:linear-gradient(90deg,var(--card-deep),var(--card))}
+  .side .foot{margin-top:10px;font-size:.76rem;color:var(--ink-dim)}
+  .side .foot b{color:var(--ink);font-family:'IBM Plex Mono',monospace;font-weight:600}
+
+  /* ---------- flow table ---------- */
+  details{margin-top:20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}
+  summary{
+    cursor:pointer;padding:14px 16px;font-family:'Archivo',sans-serif;font-weight:700;
+    font-size:.9rem;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    min-height:48px
+  }
+  summary::-webkit-details-marker{display:none}
+  summary .chev{transition:.2s;color:var(--ink-dim)}
+  details[open] summary .chev{transform:rotate(180deg)}
+  summary:focus-visible{outline:2px solid var(--pix);outline-offset:-2px}
+  .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 12px 14px}
+  table{width:100%;border-collapse:collapse;font-size:.78rem;min-width:540px}
+  th{
+    font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.64rem;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-dim);text-align:right;padding:8px 10px;
+    border-bottom:1px solid var(--line)
+  }
+  th:first-child,td:first-child{text-align:left}
+  td{padding:8px 10px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;border-bottom:1px solid var(--panel-2)}
+  tr:last-child td{border-bottom:none}
+  td.neg{color:var(--danger)}
+  td.pos{color:var(--win)}
+  tfoot td{border-top:1px solid var(--line);font-weight:600;color:var(--ink)}
+
+  .method{margin-top:18px;font-size:.76rem;color:var(--ink-dim);line-height:1.65;border-left:3px solid var(--line);padding-left:14px}
+  .method b{color:var(--ink)}
+
+  @media (prefers-reduced-motion: reduce){
+    .bar{transition:none}
+    .side{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Calculadora de decisão de pagamento</div>
+    <h1>À vista no PIX <span class="vs">ou</span> no cartão?</h1>
+    <p class="sub">Informe a compra e o desconto. A calculadora simula o dinheiro rendendo a 100% do CDI enquanto o cartão não vence, desconta o IR da tabela regressiva a cada resgate, e mostra qual escolha deixa mais dinheiro no seu bolso.</p>
+  </header>
+
+  <div class="grid">
+    <div class="field" style="grid-column:1/-1">
+      <label for="valor">1 · Valor da compra (R$)</label>
+      <input type="number" id="valor" value="1000" min="0" step="10" inputmode="decimal">
+    </div>
+    <div class="field">
+      <label id="descLabel">2 · Pagamento à vista</label>
+      <div class="mode mode-pix" role="group" aria-labelledby="descLabel">
+        <button type="button" id="btnDescPct" class="active">Desconto (%)</button>
+        <button type="button" id="btnDescVal">Valor à vista (R$)</button>
+      </div>
+      <div id="descPctRow">
+        <input type="number" id="desc" value="5" min="0" max="100" step="0.5" inputmode="decimal" aria-label="Desconto à vista em porcentagem">
+        <div class="hint" id="descPctHint">—</div>
+      </div>
+      <div id="descValRow" style="display:none">
+        <input type="number" id="descValor" value="950" min="0" step="10" inputmode="decimal" aria-label="Valor da compra à vista em reais">
+        <div class="hint" id="descValHint">—</div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="modeLabel">3 · Forma de pagamento no cartão</label>
+      <div class="mode" role="group" aria-labelledby="modeLabel">
+        <button type="button" id="btnUnico" class="active">1× no vencimento</button>
+        <button type="button" id="btnParc">Parcelado</button>
+      </div>
+      <div id="parcRow" style="display:none">
+        <input type="number" id="parcelas" value="3" min="2" max="24" step="1" inputmode="numeric" aria-label="Número de parcelas">
+        <div class="hint">parcelas mensais, sem juros</div>
+      </div>
+      <div id="unicoHint" class="hint">valor cheio, pago de uma vez na fatura</div>
+    </div>
+    <div class="field">
+      <label for="diaVenc">4 · Dia do fechamento da fatura</label>
+      <input type="number" id="diaVenc" value="10" min="1" max="31" step="1" inputmode="numeric">
+      <div class="hint" id="vencHint">—</div>
+    </div>
+    <div class="field">
+      <label for="cashback">5 · Cashback do cartão (%)</label>
+      <input type="number" id="cashback" value="0" min="0" max="100" step="0.1" inputmode="decimal">
+      <div class="hint">% do valor da compra devolvido pelo cartão</div>
+    </div>
+    <div class="field" style="grid-column:1/-1">
+      <label for="cdi">6 · CDI (% ao ano) — usado na simulação</label>
+      <div class="cdi-row" role="status" aria-live="polite">
+        <span class="cdi-dot" id="cdiDot"></span>
+        <span class="lbl">Banco Central:</span>
+        <span class="val" id="cdiStatus">buscando…</span>
+        <button id="cdiRefresh" type="button" title="Buscar novamente no Banco Central">↻ atualizar</button>
+      </div>
+      <input type="number" id="cdi" value="14.78" min="0" max="60" step="0.01" inputmode="decimal">
+      <div class="hint" id="cdiSourceHint">preenchido automaticamente pela fonte oficial; você pode editar</div>
+    </div>
+  </div>
+
+  <section class="verdict" id="verdict" aria-live="polite">
+    <div class="tag">Veredito</div>
+    <h2 id="verdictTitle">—</h2>
+    <p class="save" id="verdictSave">—</p>
+  </section>
+
+  <div class="duel">
+    <div class="side pix-side" id="sidePix">
+      <span class="crown">MELHOR ESCOLHA</span>
+      <h3><span class="swatch"></span>À vista (dinheiro/PIX)</h3>
+      <p class="desc">Paga hoje com desconto. Custo já é o valor presente.</p>
+      <div class="vp-lbl">Custo (valor presente)</div>
+      <div class="vp" id="vpPix">—</div>
+      <div class="bar-track"><div class="bar" id="barPix" style="width:0%"></div></div>
+      <p class="foot">Desconto aplicado: <b id="footPix">—</b></p>
+    </div>
+    <div class="side card-side" id="sideCard">
+      <span class="crown">MELHOR ESCOLHA</span>
+      <h3><span class="swatch"></span>Cartão de crédito</h3>
+      <p class="desc">Dinheiro fica rendendo a 100% do CDI; resgates pagam cada fatura.</p>
+      <div class="vp-lbl">Custo efetivo (valor presente)</div>
+      <div class="vp" id="vpCard">—</div>
+      <div class="bar-track"><div class="bar" id="barCard" style="width:0%"></div></div>
+      <p class="foot">Rendimento líquido da aplicação: <b id="footCard">—</b></p>
+      <p class="foot" id="footCashRow" style="display:none">Cashback recebido: <b id="footCash">—</b></p>
+    </div>
+  </div>
+
+  <details>
+    <summary>Fluxo de caixa detalhado do cartão <span class="chev">▾</span></summary>
+    <div class="tbl-wrap">
+      <table id="flowTable">
+        <thead>
+          <tr><th>Evento</th><th>Dia</th><th>Fatura (R$)</th><th>Rend. bruto (R$)</th><th>IR (R$)</th><th>Resgate (R$)</th><th>Saldo aplicado (R$)</th></tr>
+        </thead>
+        <tbody id="flowBody"></tbody>
+        <tfoot id="flowFoot"></tfoot>
+      </table>
+    </div>
+  </details>
+
+  <p class="method">
+    <b>Como calculamos:</b> no cenário cartão, você guarda hoje o mesmo valor que pagaria à vista (informado em % de desconto ou diretamente em R$) numa aplicação a <b>100% do CDI</b> (base 252 dias úteis, ≈21 úteis/mês). A cada pagamento, resgata-se exatamente o valor da fatura; o <b>IR da tabela regressiva</b> (22,5% até 180 dias · 20% até 360 · 17,5% até 720 · 15% acima) incide sobre o rendimento proporcional de cada resgate. O <b>cashback</b> é calculado sobre o valor cheio da compra, creditado no 1º pagamento e trazido a valor presente, abatendo o custo do cartão. A <b>data da 1ª cobrança</b> é inferida automaticamente: se o dia de hoje é igual ou anterior ao dia do fechamento, a compra cai na fatura deste mês; caso contrário, na do mês seguinte — e a saída de caixa ocorre <b>7 dias após o fechamento</b> (dias 29/30/31 ajustam para o último dia do mês quando necessário). Se ao fim sobra saldo aplicado, ele é trazido a valor presente e abatido do custo do cartão; se falta, o aporte extra é somado. Não consideramos IOF (resgates antes de 30 dias têm IOF regressivo) nem juros do parcelamento da loja. Esta é uma simulação educativa, não uma recomendação financeira.
+  </p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- helpers ----------
+  const $ = id => document.getElementById(id);
+  const BRL = new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'});
+  const fmt = v => BRL.format(v);
+  const pct = v => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '%';
+
+  const state = { modo:'unico', descModo:'pct' }; // modo: 'unico' | 'parcelado' · descModo: 'pct' | 'valor'
+
+  // ---------- CDI automático ----------
+  // Fonte 1: Banco Central do Brasil, série SGS 4389 (CDI anualizado base 252)
+  // Fonte 2 (backup): BrasilAPI, que replica o dado oficial do CDI
+  // Obs.: em pré-visualizadores com sandbox (que bloqueiam rede) as duas falham;
+  // publicado no GitHub Pages ou aberto direto no navegador, funciona.
+  const CDI_FALLBACK = 14.78; // usado se as APIs estiverem indisponíveis
+  const sanitiza = v => (isFinite(v) && v>0 && v<=60) ? v : null;
+
+  async function tentaBCB(){
+    const r = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.4389/dados/ultimos/1?formato=json',{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    const item = j && j[0];
+    const val = sanitiza(parseFloat(String(item.valor).replace(',','.')));
+    if(val===null) throw new Error('valor inválido');
+    return {val, ref:item.data||'hoje', fonte:'Banco Central do Brasil (série SGS 4389)'};
+  }
+  async function tentaBrasilAPI(){
+    const r = await fetch('https://brasilapi.com.br/api/taxas/v1/cdi',{cache:'no-store'});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const j = await r.json();
+    const val = sanitiza(parseFloat(j.valor));
+    if(val===null) throw new Error('valor inválido');
+    return {val, ref:'hoje', fonte:'BrasilAPI (dado oficial do CDI)'};
+  }
+
+  async function fetchCDI(){
+    const dot=$('cdiDot'), st=$('cdiStatus'), hint=$('cdiSourceHint');
+    dot.className='cdi-dot'; st.textContent='buscando…';
+    let res=null;
+    try{ res = await tentaBCB(); }
+    catch(e1){ try{ res = await tentaBrasilAPI(); }catch(e2){ res=null; } }
+    if(res){
+      $('cdi').value = res.val.toFixed(2);
+      dot.className='cdi-dot ok';
+      st.textContent = pct(res.val) + ' a.a. · ' + res.ref;
+      hint.textContent = 'fonte: ' + res.fonte + ' — editável';
+      calc();
+    }else{
+      dot.className='cdi-dot err';
+      st.textContent = 'indisponível — usando ' + pct(parseFloat($('cdi').value)||CDI_FALLBACK) + ' a.a.';
+      hint.textContent = 'sem acesso às fontes agora (pré-visualizadores bloqueiam rede; no site publicado funciona). Ajuste manualmente se quiser.';
+    }
+  }
+  $('cdiRefresh').addEventListener('click', fetchCDI);
+
+  // ---------- IR tabela regressiva ----------
+  function aliquotaIR(diasCorridos){
+    if(diasCorridos<=180) return 0.225;
+    if(diasCorridos<=360) return 0.20;
+    if(diasCorridos<=720) return 0.175;
+    return 0.15;
+  }
+
+  // dias corridos -> dias úteis (aprox. 252/365)
+  const DU = d => d * (252/365);
+
+  // ---------- fechamento automático a partir do dia do mês ----------
+  // Regra: se o dia de hoje é igual ou anterior ao dia do fechamento,
+  // a 1ª cobrança cai na fatura DESTE mês; caso contrário, na do mês seguinte.
+  // O pagamento (saída de caixa) ocorre 7 dias após o fechamento da fatura.
+  // Dias 29/30/31 ajustam para o último dia do mês quando ele não existir.
+  function proximoFechamento(){
+    const diaV = Math.min(31, Math.max(1, Math.round(parseFloat($('diaVenc').value)||10)));
+    const agora = new Date();
+    const hoje = new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    const mk = (y,m)=>{ // fechamento no mês (y,m), ajustando p/ último dia se preciso
+      const ultimo = new Date(y, m+1, 0).getDate();
+      return new Date(y, m, Math.min(diaV, ultimo));
+    };
+    const venc = (hoje.getDate() <= diaV)
+      ? mk(hoje.getFullYear(), hoje.getMonth())      // fatura deste mês
+      : mk(hoje.getFullYear(), hoje.getMonth()+1);   // fatura do mês seguinte
+    const pag = new Date(venc.getFullYear(), venc.getMonth(), venc.getDate()+7); // pagamento = fechamento + 7 dias
+    const dias = Math.max(1, Math.round((pag - hoje)/86400000));
+    return {dias, venc, pag};
+  }
+  const fmtData = d => d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // ---------- núcleo do cálculo ----------
+  function calc(){
+    const valor = Math.max(0, parseFloat($('valor').value)||0);
+    const cb    = Math.min(100, Math.max(0, parseFloat($('cashback').value)||0));
+
+    // Pagamento à vista: por % de desconto OU por valor direto
+    let custoAVista, desc;
+    if(state.descModo === 'pct'){
+      desc = Math.min(100, Math.max(0, parseFloat($('desc').value)||0));
+      custoAVista = valor * (1 - desc/100);
+      $('descPctHint').textContent = 'equivale a pagar ' + fmt(custoAVista) + ' à vista';
+    }else{
+      custoAVista = Math.max(0, parseFloat($('descValor').value)||0);
+      desc = valor > 0 ? (1 - custoAVista/valor) * 100 : 0;
+      $('descValHint').textContent = desc >= 0
+        ? ('equivale a ' + pct(desc) + ' de desconto sobre ' + fmt(valor))
+        : ('atenção: valor à vista MAIOR que o valor da compra (' + pct(-desc) + ' de acréscimo)');
+    }
+
+    const vencInfo = proximoFechamento();
+    const dias1 = vencInfo.dias;
+    $('vencHint').textContent = 'fatura fecha em ' + fmtData(vencInfo.venc) + ' · pagamento em ' + fmtData(vencInfo.pag) + ' — daqui a ' + dias1 + (dias1===1?' dia':' dias');
+    const nParc = state.modo==='parcelado' ? Math.max(2, Math.round(parseFloat($('parcelas').value)||2)) : 1;
+    const cdiAA = Math.max(0, parseFloat($('cdi').value)||0)/100;
+
+    // fator diário (dias úteis, base 252)
+    const fDia = Math.pow(1+cdiAA, 1/252);
+
+    // pagamentos: dia dias1, dias1+30, dias1+60, ...
+    const parcelaVal = valor / nParc;
+    const vencimentos = Array.from({length:nParc},(_,i)=> dias1 + 30*i);
+
+    // Simula: aplica hoje o custoAVista; a cada pagamento resgata o valor da fatura.
+    // Custo básico = quota média ponderada. Usamos método de custo médio:
+    // rendimento embutido no resgate = resgate * (1 - principalMedio/saldoBruto)
+    let saldo = custoAVista;      // saldo bruto aplicado
+    let principal = custoAVista;  // principal remanescente (custo)
+    let diaAnterior = 0;
+    let totalIR = 0, totalRendBruto = 0, aporteExtra = 0;
+
+    const rows = [];
+
+    for(let i=0;i<nParc;i++){
+      const d = vencimentos[i];
+      // capitaliza do dia anterior até este pagamento
+      const fator = Math.pow(fDia, DU(d - diaAnterior));
+      const rendPeriodo = saldo * (fator - 1);
+      saldo *= fator;
+      totalRendBruto += rendPeriodo;
+      diaAnterior = d;
+
+      const fatura = (i===nParc-1) ? (valor - parcelaVal*(nParc-1)) : parcelaVal; // ajuste de centavos
+
+      // proporção de rendimento no saldo
+      const propRend = saldo>0 ? Math.max(0,(saldo-principal)/saldo) : 0;
+
+      // precisamos resgatar bruto suficiente p/ que (bruto - IR) = fatura
+      let bruto = fatura / (1 - propRend*aliquotaIR(d));
+      let irPago, liquido;
+
+      if(bruto <= saldo + 1e-9){
+        irPago = bruto * propRend * aliquotaIR(d);
+        liquido = bruto - irPago;
+        // baixa proporcional de principal
+        principal -= bruto * (1-propRend);
+        saldo -= bruto;
+      }else{
+        // saldo insuficiente: resgata tudo e aporta a diferença do bolso
+        bruto = saldo;
+        irPago = bruto * propRend * aliquotaIR(d);
+        liquido = bruto - irPago;
+        const falta = fatura - liquido;
+        // valor presente do aporte extra
+        aporteExtra += falta / Math.pow(fDia, DU(d));
+        principal = 0; saldo = 0;
+      }
+      totalIR += irPago;
+
+      rows.push({
+        ev: nParc===1 ? 'Fatura única' : ('Parcela '+(i+1)+'/'+nParc),
+        dia: d, fatura, rend: rendPeriodo, ir: irPago, resgate: bruto, saldo
+      });
+    }
+
+    // saldo final que sobrou -> valor presente (desconta pelo mesmo CDI líq. de IR do último dia)
+    let sobraVP = 0;
+    if(saldo > 1e-9){
+      const dFim = diaAnterior;
+      const propRend = saldo>0 ? Math.max(0,(saldo-principal)/saldo) : 0;
+      const irFinal = saldo * propRend * aliquotaIR(dFim);
+      const liquidoFinal = saldo - irFinal;
+      sobraVP = liquidoFinal / Math.pow(fDia, DU(dFim));
+      rows.push({ev:'Sobra resgatada', dia:dFim, fatura:0, rend:0, ir:irFinal, resgate:saldo, saldo:0, sobra:liquidoFinal});
+      totalIR += irFinal;
+    }
+
+    // Cashback: % do valor da compra devolvido pelo cartão.
+    // Consideramos o crédito no 1º pagamento e trazemos a valor presente.
+    const cashbackNominal = valor * cb/100;
+    const cashbackVP = cashbackNominal / Math.pow(fDia, DU(dias1));
+    if(cashbackNominal > 0){
+      rows.push({ev:'Cashback do cartão', dia:dias1, fatura:0, rend:0, ir:0, resgate:0, saldo:NaN, cash:cashbackNominal});
+    }
+
+    // Custo efetivo do cartão em VP:
+    // você imobilizou custoAVista hoje, recebeu de volta sobraVP (em VP),
+    // recebeu o cashback (em VP) e pagou aporteExtra (em VP)
+    const custoCartaoVP = custoAVista - sobraVP - cashbackVP + aporteExtra;
+
+    render({custoAVista, custoCartaoVP, valor, desc, rows, totalIR, totalRendBruto, sobraVP, aporteExtra, cashbackNominal, cashbackVP, cb});
+  }
+
+  // ---------- render ----------
+  function render(r){
+    $('vpPix').textContent  = fmt(r.custoAVista);
+    $('vpCard').textContent = fmt(r.custoCartaoVP);
+    $('footPix').textContent = fmt(r.valor - r.custoAVista) + ' (' + pct(r.desc) + ')';
+    const rendLiq = r.totalRendBruto - r.totalIR;
+    $('footCard').textContent = fmt(rendLiq) + ' (bruto ' + fmt(r.totalRendBruto) + ' − IR ' + fmt(r.totalIR) + ')';
+    if(r.cashbackNominal > 0){
+      $('footCashRow').style.display = 'block';
+      $('footCash').textContent = fmt(r.cashbackNominal) + ' (' + pct(r.cb) + ' da compra)';
+    }else{
+      $('footCashRow').style.display = 'none';
+    }
+
+    // barras proporcionais (menor custo = barra menor)
+    const maxC = Math.max(r.custoAVista, r.custoCartaoVP, 0.01);
+    $('barPix').style.width  = (Math.max(0,r.custoAVista)/maxC*100).toFixed(1)+'%';
+    $('barCard').style.width = (Math.max(0,r.custoCartaoVP)/maxC*100).toFixed(1)+'%';
+
+    const v = $('verdict'), vt=$('verdictTitle'), vs=$('verdictSave');
+    const sPix=$('sidePix'), sCard=$('sideCard');
+    sPix.classList.remove('winner'); sCard.classList.remove('winner');
+    v.classList.remove('pix','card');
+
+    const dif = r.custoCartaoVP - r.custoAVista; // >0: à vista ganha
+    const eps = 0.005;
+    if(Math.abs(dif) < eps || r.custoAVista===0){
+      vt.textContent = 'Empate técnico';
+      vt.style.color = 'var(--ink)';
+      vs.innerHTML = '<span class="tie">As duas opções custam praticamente o mesmo em valor presente.</span>';
+    }else if(dif > 0){
+      v.classList.add('pix'); sPix.classList.add('winner');
+      vt.style.color = '';
+      vt.textContent = '✅ Melhor pagar À VISTA';
+      const p = dif / r.custoCartaoVP * 100;
+      vs.innerHTML = 'Você economiza <strong>' + fmt(dif) + '</strong> — <strong class="pct">' + pct(p) + '</strong> a menos que no cartão.';
+    }else{
+      v.classList.add('card'); sCard.classList.add('winner');
+      vt.style.color = '';
+      vt.textContent = '✅ Melhor pagar no CARTÃO';
+      const p = (-dif) / r.custoAVista * 100;
+      vs.innerHTML = 'Você economiza <strong>' + fmt(-dif) + '</strong> — <strong class="pct">' + pct(p) + '</strong> a menos que à vista.';
+    }
+
+    // tabela
+    const tb=$('flowBody'); tb.innerHTML='';
+    r.rows.forEach(row=>{
+      const tr=document.createElement('tr');
+      const isSobra = row.ev==='Sobra resgatada';
+      const isCash = row.cash>0;
+      tr.innerHTML =
+        '<td>'+row.ev+'</td>'+
+        '<td>'+row.dia+'</td>'+
+        '<td class="'+(row.fatura>0?'neg':'')+'">'+(row.fatura>0?'−'+fmt(row.fatura):'—')+'</td>'+
+        '<td class="pos">'+(row.rend>0?'+'+fmt(row.rend):(isCash?'+'+fmt(row.cash)+' <span style="color:var(--win)">(cashback)</span>':'—'))+'</td>'+
+        '<td class="'+(row.ir>0?'neg':'')+'">'+(row.ir>0?'−'+fmt(row.ir):'—')+'</td>'+
+        '<td>'+(isCash?'—':fmt(row.resgate)+(isSobra?' <span style="color:var(--win)">(volta p/ você)</span>':''))+'</td>'+
+        '<td>'+(isCash?'—':fmt(row.saldo))+'</td>';
+      tb.appendChild(tr);
+    });
+    const tf=$('flowFoot');
+    tf.innerHTML = '<tr><td colspan="7">Rendimento líquido total: '+fmt(r.totalRendBruto-r.totalIR)
+      + (r.cashbackNominal>0 ? ' · Cashback em valor presente: '+fmt(r.cashbackVP) : '')
+      + (r.sobraVP>0 ? ' · Sobra em valor presente: '+fmt(r.sobraVP) : '')
+      + (r.aporteExtra>0 ? ' · Aporte extra necessário (VP): '+fmt(r.aporteExtra) : '')
+      + '</td></tr>';
+  }
+
+  // ---------- eventos ----------
+  ['valor','desc','descValor','diaVenc','cashback','parcelas','cdi'].forEach(id=>{
+    $(id).addEventListener('input', calc);
+  });
+  $('btnDescPct').addEventListener('click', ()=>{
+    state.descModo='pct';
+    $('btnDescPct').classList.add('active'); $('btnDescVal').classList.remove('active');
+    $('descPctRow').style.display='block'; $('descValRow').style.display='none';
+    calc();
+  });
+  $('btnDescVal').addEventListener('click', ()=>{
+    state.descModo='valor';
+    $('btnDescVal').classList.add('active'); $('btnDescPct').classList.remove('active');
+    $('descValRow').style.display='block'; $('descPctRow').style.display='none';
+    calc();
+  });
+  $('btnUnico').addEventListener('click', ()=>{
+    state.modo='unico';
+    $('btnUnico').classList.add('active'); $('btnParc').classList.remove('active');
+    $('parcRow').style.display='none'; $('unicoHint').style.display='block';
+    calc();
+  });
+  $('btnParc').addEventListener('click', ()=>{
+    state.modo='parcelado';
+    $('btnParc').classList.add('active'); $('btnUnico').classList.remove('active');
+    $('parcRow').style.display='block'; $('unicoHint').style.display='none';
+    calc();
+  });
+
+  // init
+  calc();
+  fetchCDI();
+})();
+</script>
+</body>
+</html>
